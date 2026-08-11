@@ -10,7 +10,10 @@
 function noirwerk_setup() {
     add_theme_support('title-tag');
     add_theme_support('post-thumbnails');
+<<<<<<< HEAD
     add_theme_support('automatic-feed-links');
+=======
+>>>>>>> 2b7244c884dc4bb8a55445380d5fba8d39eb66f4
     add_theme_support('custom-logo', array(
         'height' => 100,
         'width' => 100,
@@ -40,10 +43,17 @@ function noirwerk_assets() {
     wp_enqueue_style('noirwerk-main', get_stylesheet_directory_uri() . '/assets/css/main.css', array(), '1.0');
     wp_enqueue_style('google-fonts', 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap', array(), null);
     
+<<<<<<< HEAD
     wp_enqueue_script('noirwerk-gsap', get_template_directory_uri() . '/assets/js/gsap.min.js', array(), '3.12.5', true);
     wp_enqueue_script('noirwerk-scrolltrigger', get_template_directory_uri() . '/assets/js/ScrollTrigger.min.js', array('noirwerk-gsap'), '3.12.5', true);
     wp_enqueue_script('noirwerk-lenis', get_template_directory_uri() . '/assets/js/lenis.min.js', array(), '1.1.14', true);
     wp_enqueue_script('noirwerk-split', get_template_directory_uri() . '/assets/js/split-type.min.js', array(), '0.3.4', true);
+=======
+    wp_enqueue_script('noirwerk-libs', 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js', array(), '3.12.5', true);
+    wp_enqueue_script('noirwerk-scrolltrigger', 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js', array('noirwerk-libs'), '3.12.5', true);
+    wp_enqueue_script('noirwerk-lenis', 'https://unpkg.com/lenis@1.1.14/dist/lenis.min.js', array(), '1.1.14', true);
+    wp_enqueue_script('noirwerk-split', 'https://unpkg.com/split-type@0.3.4/umd/index.min.js', array(), '0.3.4', true);
+>>>>>>> 2b7244c884dc4bb8a55445380d5fba8d39eb66f4
     wp_enqueue_script('noirwerk-main', get_stylesheet_directory_uri() . '/assets/js/main.js', array('noirwerk-libs', 'noirwerk-scrolltrigger'), '1.0', true);
     
     wp_localize_script('noirwerk-main', 'noirwerk_ajax', array(
@@ -348,6 +358,7 @@ function noirwerk_contacts_page() {
 // E-MAILS IN DATEI SPEICHERN (FÜR TESTS)
 // ============================================================
 
+<<<<<<< HEAD
 // add_filter('wp_mail', function($args) {
 //     $log_dir = '/var/www/html/wp-content/uploads/';
 //     if (!file_exists($log_dir)) {
@@ -365,6 +376,25 @@ function noirwerk_contacts_page() {
 //     file_put_contents($log_file, $log, FILE_APPEND);
 //     return $args;
 // }, 10, 1);
+=======
+add_filter('wp_mail', function($args) {
+    $log_dir = '/var/www/html/wp-content/uploads/';
+    if (!file_exists($log_dir)) {
+        mkdir($log_dir, 0755, true);
+    }
+    
+    $log_file = $log_dir . 'mail.log';
+    $log = date('Y-m-d H:i:s') . "\n";
+    $log .= "TO: " . print_r($args['to'], true) . "\n";
+    $log .= "SUBJECT: " . $args['subject'] . "\n";
+    $log .= "MESSAGE:\n" . $args['message'] . "\n";
+    $log .= "HEADERS: " . print_r($args['headers'], true) . "\n";
+    $log .= str_repeat('=', 60) . "\n\n";
+    
+    file_put_contents($log_file, $log, FILE_APPEND);
+    return $args;
+}, 10, 1);
+>>>>>>> 2b7244c884dc4bb8a55445380d5fba8d39eb66f4
 
 add_filter('pre_wp_mail', function($null) {
     return true;
@@ -396,6 +426,7 @@ function noirwerk_admin_notice() {
 add_action('admin_notices', 'noirwerk_admin_notice');
 
 // CSV-Export
+<<<<<<< HEAD
 // function noirwerk_export_contacts() {
 //     if (isset($_GET['export_contacts']) && current_user_can('manage_options')) {
 //         global $wpdb;
@@ -439,3 +470,33 @@ add_theme_support('custom-background', array(
     'default-image' => '',
 ));
 add_editor_style();
+=======
+function noirwerk_export_contacts() {
+    if (isset($_GET['export_contacts']) && current_user_can('manage_options')) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'noirwerk_contacts';
+        $contacts = $wpdb->get_results("SELECT * FROM $table_name ORDER BY created_at DESC");
+        
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=kontaktanfragen.csv');
+        
+        $output = fopen('php://output', 'w');
+        fputcsv($output, array('ID', 'Name', 'E-Mail', 'Betreff', 'Status', 'Datum', 'Nachricht'));
+        
+        foreach ($contacts as $contact) {
+            fputcsv($output, array(
+                $contact->id,
+                $contact->name,
+                $contact->email,
+                $contact->subject,
+                $contact->status,
+                $contact->created_at,
+                $contact->message
+            ));
+        }
+        fclose($output);
+        exit;
+    }
+}
+add_action('admin_init', 'noirwerk_export_contacts');
+>>>>>>> 2b7244c884dc4bb8a55445380d5fba8d39eb66f4
