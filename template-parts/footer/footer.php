@@ -1,0 +1,68 @@
+ <?php
+/**
+ * Footer Template Part
+ */
+?>
+
+<footer role="contentinfo">
+    <div class="container">
+        <a href="<?php echo esc_url(home_url('/')); ?>" class="foot__word">
+            <?php bloginfo('name'); ?>
+        </a>
+        
+        <div class="foot__grid">
+            <div class="foot__manifest">
+                <small><?php _e('Manifest', 'noirwerk'); ?></small>
+                <p><?php echo get_theme_mod('noirwerk_footer_text', __('Systeme aus Licht und Logik. Gebaut in Berlin, getestet gegen die Nacht.', 'noirwerk')); ?></p>
+            </div>
+            
+            <div class="foot__menu">
+                <small><?php _e('Menü', 'noirwerk'); ?></small>
+                <?php
+                wp_nav_menu(array(
+                    'theme_location' => 'footer',
+                    'container' => false,
+                    'menu_class' => 'footer-menu',
+                    'depth' => 1,
+                    'fallback_cb' => false,
+                ));
+                ?>
+            </div>
+            
+            <div class="foot__social">
+                <small><?php _e('Social', 'noirwerk'); ?></small>
+                <?php
+                wp_nav_menu(array(
+                    'theme_location' => 'social',
+                    'container' => false,
+                    'menu_class' => 'social-menu',
+                    'depth' => 1,
+                    'fallback_cb' => false,
+                ));
+                ?>
+            </div>
+            
+            <div class="foot__legal">
+                <small><?php _e('Rechtliches', 'noirwerk'); ?></small>
+                <?php
+                wp_nav_menu(array(
+                    'theme_location' => 'legal',
+                    'container' => false,
+                    'menu_class' => 'legal-menu',
+                    'depth' => 1,
+                    'fallback_cb' => false,
+                ));
+                ?>
+            </div>
+        </div>
+        
+        <div class="foot__bottom">
+            <span>&copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?> — <?php _e('Berlin', 'noirwerk'); ?></span>
+            <span class="status">
+                <i aria-hidden="true"></i>
+                <?php _e('System online', 'noirwerk'); ?>
+            </span>
+            <span><?php _e('Local Time', 'noirwerk'); ?> <b id="clockFoot" style="color:var(--white);font-weight:500">--:--:--</b></span>
+        </div>
+    </div>
+</footer>
