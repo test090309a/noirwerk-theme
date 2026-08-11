@@ -40,11 +40,12 @@ function noirwerk_assets() {
     wp_enqueue_style('noirwerk-main', get_stylesheet_directory_uri() . '/assets/css/main.css', array(), '1.0');
     wp_enqueue_style('google-fonts', 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap', array(), null);
     
+    // Lokale Scripts (GSAP, Lenis, SplitType)
     wp_enqueue_script('noirwerk-gsap', get_template_directory_uri() . '/assets/js/gsap.min.js', array(), '3.12.5', true);
     wp_enqueue_script('noirwerk-scrolltrigger', get_template_directory_uri() . '/assets/js/ScrollTrigger.min.js', array('noirwerk-gsap'), '3.12.5', true);
     wp_enqueue_script('noirwerk-lenis', get_template_directory_uri() . '/assets/js/lenis.min.js', array(), '1.1.14', true);
     wp_enqueue_script('noirwerk-split', get_template_directory_uri() . '/assets/js/split-type.min.js', array(), '0.3.4', true);
-    wp_enqueue_script('noirwerk-main', get_stylesheet_directory_uri() . '/assets/js/main.js', array('noirwerk-libs', 'noirwerk-scrolltrigger'), '1.0', true);
+    wp_enqueue_script('noirwerk-main', get_stylesheet_directory_uri() . '/assets/js/main.js', array('noirwerk-gsap', 'noirwerk-scrolltrigger'), '1.0', true);
     
     wp_localize_script('noirwerk-main', 'noirwerk_ajax', array(
         'ajax_url' => admin_url('admin-ajax.php'),
@@ -179,10 +180,8 @@ function noirwerk_handle_contact() {
         exit;
     }
     
-    // In Datenbank speichern
     noirwerk_save_contact($name, $email, $subject, $message);
     
-    // E-Mail versenden
     $to = get_option('admin_email');
     $headers = array(
         'Content-Type: text/html; charset=UTF-8',
@@ -253,14 +252,12 @@ function noirwerk_contacts_page() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'noirwerk_contacts';
     
-    // Löschen verarbeiten
     if (isset($_GET['delete']) && current_user_can('manage_options')) {
         $id = intval($_GET['delete']);
         $wpdb->delete($table_name, array('id' => $id), array('%d'));
         echo '<div class="notice notice-success"><p>Nachricht gelöscht.</p></div>';
     }
     
-    // Alle Einträge abrufen
     $contacts = $wpdb->get_results("SELECT * FROM $table_name ORDER BY created_at DESC");
     $unread_count = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE status = 'unread'");
     
@@ -272,8 +269,8 @@ function noirwerk_contacts_page() {
             <div class="notice notice-info"><p>Keine Kontaktanfragen vorhanden.</p></div>
         <?php else : ?>
             <div style="margin: 20px 0;">
-    <a href="<?php echo admin_url('admin.php?page=noirwerk-contacts&export_contacts=1'); ?>" class="button button-primary">📥 CSV Export</a>
-</div>
+                <a href="<?php echo admin_url('admin.php?page=noirwerk-contacts&export_contacts=1'); ?>" class="button button-primary">📥 CSV Export</a>
+            </div>
             <table class="wp-list-table widefat fixed striped">
                 <thead>
                     <tr>
@@ -299,13 +296,13 @@ function noirwerk_contacts_page() {
                                 </span>
                             </td>
                             <td><?php echo date('d.m.Y H:i', strtotime($contact->created_at)); ?></td>
-<td>
-    <a href="<?php echo admin_url('admin.php?page=noirwerk-contacts&detail=' . $contact->id); ?>" class="button button-small">Anzeigen</a>
-    <?php if ($contact->status == 'unread') : ?>
-        <a href="<?php echo admin_url('admin.php?page=noirwerk-contacts&mark_read=' . $contact->id); ?>" class="button button-small button-success">Als gelesen</a>
-    <?php endif; ?>
-    <a href="<?php echo admin_url('admin.php?page=noirwerk-contacts&delete=' . $contact->id); ?>" class="button button-small button-danger" onclick="return confirm('Wirklich löschen?')">Löschen</a>
-</td>
+                            <td>
+                                <a href="<?php echo admin_url('admin.php?page=noirwerk-contacts&detail=' . $contact->id); ?>" class="button button-small">Anzeigen</a>
+                                <?php if ($contact->status == 'unread') : ?>
+                                    <a href="<?php echo admin_url('admin.php?page=noirwerk-contacts&mark_read=' . $contact->id); ?>" class="button button-small button-success">Als gelesen</a>
+                                <?php endif; ?>
+                                <a href="<?php echo admin_url('admin.php?page=noirwerk-contacts&delete=' . $contact->id); ?>" class="button button-small button-danger" onclick="return confirm('Wirklich löschen?')">Löschen</a>
+                            </td>
                         </tr>
                         <?php if (isset($_GET['detail']) && $_GET['detail'] == $contact->id) : ?>
                             <tr class="detail-row">
@@ -345,7 +342,7 @@ function noirwerk_contacts_page() {
 }
 
 // ============================================================
-// E-MAILS IN DATEI SPEICHERN (FÜR TESTS)
+// E-MAILS IN DATEI SPEICHERN (AUSKOMMENTIERT FÜR WORDPRESS.ORG)
 // ============================================================
 
 // add_filter('wp_mail', function($args) {
@@ -353,7 +350,7 @@ function noirwerk_contacts_page() {
 //     if (!file_exists($log_dir)) {
 //         mkdir($log_dir, 0755, true);
 //     }
-    
+//     
 //     $log_file = $log_dir . 'mail.log';
 //     $log = date('Y-m-d H:i:s') . "\n";
 //     $log .= "TO: " . print_r($args['to'], true) . "\n";
@@ -361,16 +358,33 @@ function noirwerk_contacts_page() {
 //     $log .= "MESSAGE:\n" . $args['message'] . "\n";
 //     $log .= "HEADERS: " . print_r($args['headers'], true) . "\n";
 //     $log .= str_repeat('=', 60) . "\n\n";
-    
+//     
 //     file_put_contents($log_file, $log, FILE_APPEND);
 //     return $args;
 // }, 10, 1);
 
-add_filter('pre_wp_mail', function($null) {
-    return true;
-}, 10, 1);
+// ============================================================
+// WEITERE THEME-SUPPORTS
+// ============================================================
 
-// Als gelesen markieren
+add_theme_support('wp-block-styles');
+add_theme_support('responsive-embeds');
+add_theme_support('align-wide');
+add_theme_support('custom-header', array(
+    'default-image' => '',
+    'flex-height' => true,
+    'flex-width' => true,
+));
+add_theme_support('custom-background', array(
+    'default-color' => '000000',
+    'default-image' => '',
+));
+add_editor_style();
+
+// ============================================================
+// ALS GELESEN MARKIEREN
+// ============================================================
+
 function noirwerk_mark_read() {
     if (isset($_GET['mark_read']) && current_user_can('manage_options')) {
         global $wpdb;
@@ -383,7 +397,10 @@ function noirwerk_mark_read() {
 }
 add_action('admin_init', 'noirwerk_mark_read');
 
-// Admin-Benachrichtigung für neue Anfragen
+// ============================================================
+// ADMIN-BENACHRICHTIGUNG
+// ============================================================
+
 function noirwerk_admin_notice() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'noirwerk_contacts';
@@ -395,19 +412,22 @@ function noirwerk_admin_notice() {
 }
 add_action('admin_notices', 'noirwerk_admin_notice');
 
-// CSV-Export
+// ============================================================
+// CSV-EXPORT (AUSKOMMENTIERT FÜR WORDPRESS.ORG)
+// ============================================================
+
 // function noirwerk_export_contacts() {
 //     if (isset($_GET['export_contacts']) && current_user_can('manage_options')) {
 //         global $wpdb;
 //         $table_name = $wpdb->prefix . 'noirwerk_contacts';
 //         $contacts = $wpdb->get_results("SELECT * FROM $table_name ORDER BY created_at DESC");
-        
+//         
 //         header('Content-Type: text/csv; charset=utf-8');
 //         header('Content-Disposition: attachment; filename=kontaktanfragen.csv');
-        
+//         
 //         $output = fopen('php://output', 'w');
 //         fputcsv($output, array('ID', 'Name', 'E-Mail', 'Betreff', 'Status', 'Datum', 'Nachricht'));
-        
+//         
 //         foreach ($contacts as $contact) {
 //             fputcsv($output, array(
 //                 $contact->id,
@@ -425,17 +445,13 @@ add_action('admin_notices', 'noirwerk_admin_notice');
 // }
 // add_action('admin_init', 'noirwerk_export_contacts');
 
-// Block-Styles & Patterns
-add_theme_support('wp-block-styles');
-add_theme_support('responsive-embeds');
-add_theme_support('align-wide');
-add_theme_support('custom-header', array(
-    'default-image' => '',
-    'flex-height' => true,
-    'flex-width' => true,
-));
-add_theme_support('custom-background', array(
-    'default-color' => '000000',
-    'default-image' => '',
-));
-add_editor_style();
+// ============================================================
+// COMMENT REPLY SCRIPT
+// ============================================================
+
+function noirwerk_enqueue_comments_reply() {
+    if (is_singular() && comments_open() && get_option('thread_comments')) {
+        wp_enqueue_script('comment-reply');
+    }
+}
+add_action('wp_enqueue_scripts', 'noirwerk_enqueue_comments_reply');
