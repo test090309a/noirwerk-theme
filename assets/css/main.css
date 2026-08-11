@@ -1475,3 +1475,91 @@ body.cur-label-on .cur-label {
         gap: 2rem;
     }
 }
+
+/* ============ DOOM OVERLAY ============ */
+.doom {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: var(--black);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+.doom.open {
+    display: flex;
+}
+.doom__shell {
+    position: relative;
+    width: min(100vw, 160vh);
+    aspect-ratio: 16/10;
+    max-height: 100vh;
+}
+.doom__shell.crt-on {
+    animation: crton .5s var(--ease) both;
+}
+@keyframes crton {
+    0% { transform: scale(1,.004); filter: brightness(6); }
+    45% { transform: scale(1,.004); filter: brightness(6); }
+    70% { transform: scale(1.02,1.05); filter: brightness(1.6); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+#doomCanvas {
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    background: var(--black);
+}
+.doom__boot {
+    position: absolute;
+    inset: 0;
+    padding: 6% 8%;
+    display: none;
+    z-index: 3;
+    background: var(--black);
+}
+.doom__boot.show {
+    display: block;
+}
+.doom__boot pre {
+    color: var(--white);
+    font-size: clamp(.6rem,1.7vw,.95rem);
+    line-height: 2;
+    white-space: pre-wrap;
+    text-shadow: 0 0 8px rgba(255,255,255,.4);
+}
+.doom__boot pre .r {
+    color: var(--red);
+    text-shadow: 0 0 8px var(--r60);
+}
+.doom__scan {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.32) 0 1px, transparent 1px 3px);
+    mix-blend-mode: multiply;
+}
+.doom__vig {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    box-shadow: inset 0 0 140px rgba(0,0,0,.9);
+}
+.doom__flicker {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background: #fff;
+    opacity: 0;
+    animation: dflick 4s steps(1) infinite;
+}
+@keyframes dflick {
+    0%,96%,100% { opacity: 0; }
+    97% { opacity: .02; }
+    98% { opacity: 0; }
+    99% { opacity: .012; }
+}
