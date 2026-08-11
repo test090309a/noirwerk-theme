@@ -1,0 +1,342 @@
+<?php
+/**
+ * Noirwerk Theme Functions
+ */
+
+// Theme Setup
+function noirwerk_setup() {
+    // Title Tag unterstützen
+    add_theme_support('title-tag');
+    
+    // Post Thumbnails
+    add_theme_support('post-thumbnails');
+    
+    // Custom Logo
+    add_theme_support('custom-logo', array(
+        'height' => 100,
+        'width' => 100,
+        'flex-height' => true,
+        'flex-width' => true,
+    ));
+    
+    // HTML5 Support
+    add_theme_support('html5', array(
+        'search-form',
+        'comment-form',
+        'comment-list',
+        'gallery',
+        'caption',
+    ));
+    
+    // Menüs registrieren
+    register_nav_menus(array(
+        'primary' => __('Hauptnavigation', 'noirwerk'),
+        'footer' => __('Footer Navigation', 'noirwerk'),
+        'social' => __('Social Links', 'noirwerk'),
+    ));
+}
+add_action('after_setup_theme', 'noirwerk_setup');
+
+// Assets einbinden
+function noirwerk_assets() {
+    wp_enqueue_style('noirwerk-main', get_stylesheet_directory_uri() . '/assets/css/main.css', array(), '1.0');
+    wp_enqueue_style('google-fonts', 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap', array(), null);
+    
+    wp_enqueue_script('noirwerk-libs', 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js', array(), '3.12.5', true);
+    wp_enqueue_script('noirwerk-scrolltrigger', 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js', array('noirwerk-libs'), '3.12.5', true);
+    wp_enqueue_script('noirwerk-lenis', 'https://unpkg.com/lenis@1.1.14/dist/lenis.min.js', array(), '1.1.14', true);
+    wp_enqueue_script('noirwerk-split', 'https://unpkg.com/split-type@0.3.4/umd/index.min.js', array(), '0.3.4', true);
+    wp_enqueue_script('noirwerk-main', get_stylesheet_directory_uri() . '/assets/js/main.js', array('noirwerk-libs', 'noirwerk-scrolltrigger'), '1.0', true);
+    
+    wp_localize_script('noirwerk-main', 'noirwerk_ajax', array(
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('noirwerk_nonce'),
+    ));
+}
+add_action('wp_enqueue_scripts', 'noirwerk_assets');
+
+// Widget Areas registrieren
+function noirwerk_widgets_init() {
+    register_sidebar(array(
+        'name' => __('Footer Bereich 1', 'noirwerk'),
+        'id' => 'footer-1',
+        'description' => __('Footer Widget Bereich 1', 'noirwerk'),
+        'before_widget' => '<div id="%1$s" class="widget %2$s">',
+        'after_widget' => '</div>',
+    ));
+    
+    register_sidebar(array(
+        'name' => __('Footer Bereich 2', 'noirwerk'),
+        'id' => 'footer-2',
+        'description' => __('Footer Widget Bereich 2', 'noirwerk'),
+        'before_widget' => '<div id="%1$s" class="widget %2$s">',
+        'after_widget' => '</div>',
+    ));
+    
+    register_sidebar(array(
+        'name' => __('Footer Bereich 3', 'noirwerk'),
+        'id' => 'footer-3',
+        'description' => __('Footer Widget Bereich 3', 'noirwerk'),
+        'before_widget' => '<div id="%1$s" class="widget %2$s">',
+        'after_widget' => '</div>',
+    ));
+    
+    register_sidebar(array(
+        'name' => __('Footer Bereich 4', 'noirwerk'),
+        'id' => 'footer-4',
+        'description' => __('Footer Widget Bereich 4', 'noirwerk'),
+        'before_widget' => '<div id="%1$s" class="widget %2$s">',
+        'after_widget' => '</div>',
+    ));
+}
+add_action('widgets_init', 'noirwerk_widgets_init');
+
+// Lazy Load für Hintergrundbilder
+function noirwerk_lazy_load() {
+    ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const images = document.querySelectorAll('img[data-src]');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                    observer.unobserve(img);
+                }
+            });
+        });
+        images.forEach(img => observer.observe(img));
+    });
+    </script>
+    <?php
+}
+add_action('wp_footer', 'noirwerk_lazy_load');
+
+// ============================================================
+// KONTAKTFORMULAR - EIGENE IMPLEMENTIERUNG
+// ============================================================
+
+function noirwerk_handle_contact() {
+    if (!isset($_POST['noirwerk_contact_nonce']) || !wp_verify_nonce($_POST['noirwerk_contact_nonce'], 'noirwerk_contact')) {
+        wp_die('Sicherheitsfehler. Bitte versuchen Sie es erneut.');
+    }
+    
+    $name = sanitize_text_field($_POST['name']);
+    $email = sanitize_email($_POST['email']);
+    $subject = sanitize_text_field($_POST['subject']);
+    $message = sanitize_textarea_field($_POST['message']);
+    
+    if (empty($name) || empty($email) || empty($message)) {
+        wp_redirect(add_query_arg('error', 'empty', wp_get_referer()));
+        exit;
+    }
+    
+    if (!is_email($email)) {
+        wp_redirect(add_query_arg('error', 'invalid_email', wp_get_referer()));
+        exit;
+    }
+    
+    $to = get_option('admin_email');
+    $headers = array(
+        'Content-Type: text/html; charset=UTF-8',
+        'From: ' . $name . ' <' . $email . '>',
+        'Reply-To: ' . $email,
+    );
+    
+    $body = "
+    <html>
+    <head><style>
+        body { font-family: 'IBM Plex Mono', monospace; background: #000; color: #fff; padding: 2rem; }
+        .container { max-width: 600px; margin: 0 auto; border: 1px solid #D6001C; padding: 2rem; }
+        h2 { color: #D6001C; text-transform: uppercase; letter-spacing: 0.2em; }
+        .field { margin: 1rem 0; }
+        .label { color: #666; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; }
+        .value { color: #fff; font-weight: 300; }
+        .footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #222; font-size: 0.6rem; color: #666; }
+    </style></head>
+    <body>
+        <div class='container'>
+            <h2>🔴 Neue Kontaktanfrage</h2>
+            <div class='field'>
+                <div class='label'>Name</div>
+                <div class='value'>$name</div>
+            </div>
+            <div class='field'>
+                <div class='label'>E-Mail</div>
+                <div class='value'>$email</div>
+            </div>
+            <div class='field'>
+                <div class='label'>Betreff</div>
+                <div class='value'>$subject</div>
+            </div>
+            <div class='field'>
+                <div class='label'>Nachricht</div>
+                <div class='value'>$message</div>
+            </div>
+            <div class='footer'>
+                Gesendet von noirwerk.studio
+            </div>
+        </div>
+    </body>
+    </html>
+    ";
+    
+    $mail_sent = wp_mail($to, 'Kontaktanfrage: ' . $subject, $body, $headers);
+    
+    if ($mail_sent) {
+        wp_redirect(add_query_arg('success', '1', wp_get_referer()));
+    } else {
+        wp_redirect(add_query_arg('error', 'mail_failed', wp_get_referer()));
+    }
+    exit;
+}
+
+add_action('admin_post_noirwerk_contact', 'noirwerk_handle_contact');
+add_action('admin_post_nopriv_noirwerk_contact', 'noirwerk_handle_contact');
+
+// AJAX-Verarbeitung (für Live-Feedback ohne Seiten-Neuladen)
+function noirwerk_ajax_contact() {
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'noirwerk_contact_nonce')) {
+        wp_send_json_error(array('message' => 'Sicherheitsfehler'));
+        return;
+    }
+    
+    $name = sanitize_text_field($_POST['name']);
+    $email = sanitize_email($_POST['email']);
+    $subject = sanitize_text_field($_POST['subject']);
+    $message = sanitize_textarea_field($_POST['message']);
+    
+    if (empty($name) || empty($email) || empty($message)) {
+        wp_send_json_error(array('message' => 'Bitte füllen Sie alle Pflichtfelder aus.'));
+        return;
+    }
+    
+    if (!is_email($email)) {
+        wp_send_json_error(array('message' => 'Bitte geben Sie eine gültige E-Mail-Adresse ein.'));
+        return;
+    }
+    
+    $to = get_option('admin_email');
+    $headers = array(
+        'Content-Type: text/html; charset=UTF-8',
+        'From: ' . $name . ' <' . $email . '>',
+        'Reply-To: ' . $email,
+    );
+    
+    $body = "
+    <h2>Neue Kontaktanfrage</h2>
+    <p><strong>Name:</strong> $name</p>
+    <p><strong>E-Mail:</strong> $email</p>
+    <p><strong>Betreff:</strong> $subject</p>
+    <p><strong>Nachricht:</strong></p>
+    <p>$message</p>
+    ";
+    
+    $mail_sent = wp_mail($to, 'Kontaktanfrage: ' . $subject, $body, $headers);
+    
+    if ($mail_sent) {
+        wp_send_json_success(array('message' => 'Ihre Nachricht wurde erfolgreich gesendet!'));
+    } else {
+        wp_send_json_error(array('message' => 'Beim Senden ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.'));
+    }
+}
+
+add_action('wp_ajax_noirwerk_contact', 'noirwerk_ajax_contact');
+add_action('wp_ajax_nopriv_noirwerk_contact', 'noirwerk_ajax_contact');
+
+// SMTP-Konfiguration für Test-Mails
+// add_action('phpmailer_init', function($phpmailer) {
+//     $phpmailer->isSMTP();
+//     $phpmailer->Host = 'smtp.ethereal.email';
+//     $phpmailer->Port = 587;
+//     $phpmailer->SMTPSecure = 'tls';
+//     $phpmailer->SMTPAuth = true;
+//     $phpmailer->Username = 'thomas.cruickshank36@ethereal.email';
+//     $phpmailer->Password = 'gEcxhjrD2JrjkNr6N1';
+// });
+
+// ============================================================
+// E-MAILS IN DATEI SPEICHERN (NUR FÜR TESTS!)
+// ============================================================
+
+// ============================================================
+// E-MAIL-DEBUG (TEST)
+// ============================================================
+
+add_filter('wp_mail', function($args) {
+    // Log-Datei erstellen
+    $log_dir = '/var/www/html/wp-content/uploads/';
+    if (!file_exists($log_dir)) {
+        mkdir($log_dir, 0755, true);
+    }
+    
+    $log_file = $log_dir . 'mail.log';
+    $log = date('Y-m-d H:i:s') . "\n";
+    $log .= "To: " . print_r($args['to'], true) . "\n";
+    $log .= "Subject: " . $args['subject'] . "\n";
+    $log .= "Message: " . $args['message'] . "\n";
+    $log .= "Headers: " . print_r($args['headers'], true) . "\n";
+    $log .= str_repeat('-', 50) . "\n\n";
+    
+    file_put_contents($log_file, $log, FILE_APPEND);
+    
+    // Auch als Debug-Log schreiben
+    error_log('wp_mail wurde aufgerufen!');
+    error_log('Empfänger: ' . print_r($args['to'], true));
+    
+    return $args;
+}, 10, 1);
+
+// ============================================================
+// E-MAIL-TEST
+// ============================================================
+
+add_action('init', function() {
+    if (isset($_GET['test_mail']) && current_user_can('manage_options')) {
+        $sent = wp_mail('test@example.com', 'Test E-Mail', 'Das ist ein Test.');
+        echo 'Test-Mail gesendet: ' . ($sent ? 'JA ✅' : 'NEIN ❌');
+        exit;
+    }
+});
+// ============================================================
+// E-MAIL-TEST
+// ============================================================
+
+add_action('init', function() {
+    if (isset($_GET['test_mail']) && current_user_can('manage_options')) {
+        $sent = wp_mail('test@example.com', 'Test E-Mail', 'Das ist ein Test.');
+        echo 'Test-Mail gesendet: ' . ($sent ? 'JA ✅' : 'NEIN ❌');
+        exit;
+    }
+});
+
+// ============================================================
+// E-MAILS IN DATEI SPEICHERN (FÜR TESTS)
+// ============================================================
+
+add_filter('wp_mail', function($args) {
+    $log_dir = '/var/www/html/wp-content/uploads/';
+    if (!file_exists($log_dir)) {
+        mkdir($log_dir, 0755, true);
+    }
+    
+    $log_file = $log_dir . 'mail.log';
+    $log = date('Y-m-d H:i:s') . "\n";
+    $log .= "TO: " . print_r($args['to'], true) . "\n";
+    $log .= "SUBJECT: " . $args['subject'] . "\n";
+    $log .= "MESSAGE:\n" . $args['message'] . "\n";
+    $log .= "HEADERS: " . print_r($args['headers'], true) . "\n";
+    $log .= str_repeat('=', 60) . "\n\n";
+    
+    file_put_contents($log_file, $log, FILE_APPEND);
+    
+    // Gib immer "gesendet" zurück
+    return $args;
+}, 10, 1);
+
+// wp_mail überschreiben (immer true zurückgeben)
+add_filter('pre_wp_mail', function($null) {
+    return true;
+}, 10, 1);

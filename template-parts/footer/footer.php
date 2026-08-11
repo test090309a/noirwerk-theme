@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 <?php
+=======
+ <?php
+>>>>>>> 2b7244c884dc4bb8a55445380d5fba8d39eb66f4
 /**
  * Footer Template Part
  */
@@ -11,6 +15,7 @@
         </a>
         
         <div class="foot__grid">
+<<<<<<< HEAD
             <!-- WIDGET BEREICHE -->
             <div class="foot__widgets">
                 <?php if (is_active_sidebar('footer-1')) : ?>
@@ -41,6 +46,11 @@
             <div class="foot__manifest">
                 <small><?php _e('Manifest', 'noirwerk'); ?></small>
                 <p><?php echo esc_html(get_theme_mod('noirwerk_footer_text', __('Systeme aus Licht und Logik.', 'noirwerk'))); ?></p>
+=======
+            <div class="foot__manifest">
+                <small><?php _e('Manifest', 'noirwerk'); ?></small>
+                <p><?php echo get_theme_mod('noirwerk_footer_text', __('Systeme aus Licht und Logik. Gebaut in Berlin, getestet gegen die Nacht.', 'noirwerk')); ?></p>
+>>>>>>> 2b7244c884dc4bb8a55445380d5fba8d39eb66f4
             </div>
             
             <div class="foot__menu">
