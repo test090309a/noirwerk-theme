@@ -2,6 +2,7 @@
 /**
  * Template Name: Startseite
  * Template Post Type: page
+ * template-parts/hero/hero.php ist inaktiviert, da die Hero-Sektion direkt in dieser Datei enthalten ist.
  */
 
 get_header(); ?>
@@ -11,11 +12,7 @@ get_header(); ?>
     <div class="hero__media">
         <canvas id="rain" aria-hidden="true"></canvas>
         <video class="hero__video is-live" autoplay muted loop playsinline aria-hidden="true" tabindex="-1">
-<<<<<<< HEAD
             <source src="<?php echo esc_url(get_template_directory_uri()); ?>/assets/videos/hero.mp4" type="video/mp4">
-=======
-            <source src="<?php echo get_template_directory_uri(); ?>/assets/videos/hero.mp4" type="video/mp4">
->>>>>>> 2b7244c884dc4bb8a55445380d5fba8d39eb66f4
         </video>
         <div class="hero__shade"></div>
     </div>
@@ -42,9 +39,9 @@ get_header(); ?>
         <div class="hero__row">
             <p class="hero__sub"><?php echo get_bloginfo('description'); ?></p>
             <div class="hero__cta">
-                <a href="<?php echo esc_url(home_url('/#kontakt')); ?>" class="btn btn--red" data-magnetic data-cursor="GO">
-                    <?php _e('Projekt starten', 'noirwerk'); ?> <span class="arr">→</span>
-                </a>
+<a href="<?php echo esc_url(home_url('/')); ?>#projekt-starten" class="btn btn--red" data-magnetic data-cursor="GO">
+    <?php _e('Projekt starten', 'noirwerk'); ?> <span class="arr">→</span>
+</a>
                 <a href="<?php echo esc_url(home_url('/#projekte')); ?>" class="btn" data-magnetic data-cursor="SEHEN">
                     <?php _e('Arbeit ansehen', 'noirwerk'); ?>
                 </a>
@@ -52,8 +49,8 @@ get_header(); ?>
         </div>
     </div>
     <div class="hero__meta" aria-hidden="true">
-        <b>Sector 07</b> — Neon District<br>
-        35.6762° N / 139.6503° O<br>
+        <b>Sector 07</b> — offen.<br>
+        48.2093° N / 16.3515° E<br>  <!-- ← Lerchenfelderstraße 6, 1070 Wien -->
         <?php _e('Local Time', 'noirwerk'); ?> <b id="clockHero">--:--:--</b>
     </div>
     <div class="hero__scroll" aria-hidden="true">
@@ -65,11 +62,12 @@ get_header(); ?>
 <div class="marquee" aria-hidden="true">
     <div class="marquee__track">
         <span>Interfaces<i></i>Markensysteme<i></i>Creative Engineering<i></i>Realtime 3D<i></i>Motion<i></i>Strategie<i></i></span>
-        <span>Interfaces<i></i>Markensysteme<i></i>Creative Engineering<i></i>Realtime 3D<i></i>Motion<i></i>Strategie<i></i></span>
     </div>
 </div>
 
-<!-- Services -->
+<!-- ============================================================ -->
+<!-- SERVICES (02) -->
+<!-- ============================================================ -->
 <section id="services" aria-label="<?php _e('Leistungen', 'noirwerk'); ?>">
     <div class="container">
         <div class="sec-head">
@@ -102,7 +100,9 @@ get_header(); ?>
     </div>
 </section>
 
-<!-- Blog Posts -->
+<!-- ============================================================ -->
+<!-- BLOG / PROJEKTE (03) -->
+<!-- ============================================================ -->
 <section id="projekte" aria-label="<?php _e('Neueste Beiträge', 'noirwerk'); ?>">
     <div class="container">
         <div class="sec-head">
@@ -126,5 +126,56 @@ get_header(); ?>
         </div>
     </div>
 </section>
+
+<!-- ============================================================ -->
+<!-- ⭐ PROZESS (04) -->
+<!-- ============================================================ -->
+<?php get_template_part('template-parts/sections/process'); ?>
+<!-- ============================================================ -->
+
+<!-- ============================================================ -->
+<!-- ⭐ STATS (05) -->
+<!-- ============================================================ -->
+<section id="zahlen" aria-label="<?php _e('Kennzahlen', 'noirwerk'); ?>">
+    <div class="container">
+        <p class="eyebrow" data-reveal><b>05</b>&nbsp;— <?php _e('Zahlen', 'noirwerk'); ?></p>
+        <div class="stats__grid">
+            <?php
+            $stat_01 = get_theme_mod('my_stat_01', '870');
+            $stat_label_01 = get_theme_mod('my_stat_lbl_01', 'Projekte abgeschlossen');
+            $stat_02 = get_theme_mod('my_stat_02', '15');
+            $stat_label_02 = get_theme_mod('my_stat_lbl_02', 'Jahre Erfahrung');
+            $stat_03 = get_theme_mod('my_stat_03', '27');
+            $stat_label_03 = get_theme_mod('my_stat_lbl_03', 'Probleme bei Ereignissen');
+            
+            $stats = array(
+                array('value' => $stat_01, 'suffix' => '', 'label' => $stat_label_01, 'decimals' => 0),
+                array('value' => $stat_02, 'suffix' => '', 'label' => $stat_label_02, 'decimals' => 0),
+                array('value' => $stat_03, 'suffix' => '', 'label' => $stat_label_03, 'decimals' => 0),
+                array('value' => '152', 'suffix' => '+', 'label' => __('Zufriedene Kunden', 'noirwerk'), 'decimals' => 0)
+            );
+            
+            foreach ($stats as $stat) : ?>
+                <div class="stat" data-reveal>
+                    <div class="stat__val">
+                        <span class="stat__number" data-count="<?php echo esc_attr($stat['value']); ?>" data-decimals="<?php echo esc_attr($stat['decimals']); ?>">
+                            <?php echo esc_html($stat['value']); ?>
+                        </span>
+                        <?php if ($stat['suffix']) : ?>
+                            <i><?php echo esc_html($stat['suffix']); ?></i>
+                        <?php endif; ?>
+                    </div>
+                    <small><?php echo esc_html($stat['label']); ?></small>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+ <!-- ============================================================ -->
+ <!-- 🚀 PROJEKT STARTEN (06) --><style>/* Projekt starten Sektion: Dark minimalistisches Styling */
+ #projekt { position:relative; overflow:hidden; }</style></section>
+<?php get_template_part('template-parts/sections/project-start'); ?>
+
+
 
 <?php get_footer(); ?>

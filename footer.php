@@ -9,7 +9,7 @@
             <div>
                 <small><?php _e('Manifest', 'noirwerk'); ?></small>
                 <p style="max-width:30ch;color:var(--w60);font-size:.8rem;font-weight:300">
-                    <?php _e('Systeme aus Licht und Logik. Gebaut in Berlin, getestet gegen die Nacht.', 'noirwerk'); ?>
+                    <?php _e('Systeme aus Licht und Logik. Gebaut in Wien, getestet gegen die Nacht.', 'noirwerk'); ?>
                 </p>
             </div>
             
@@ -44,7 +44,7 @@
         </div>
         
         <div class="foot__bottom">
-            <span>© <?php echo date('Y'); ?> <?php bloginfo('name'); ?> — <?php _e('Berlin', 'noirwerk'); ?></span>
+            <span>© <?php echo date('Y'); ?> <?php bloginfo('name'); ?> — <?php _e('Wien', 'noirwerk'); ?></span>
             <span class="status">
                 <i aria-hidden="true"></i>
                 <?php _e('System online', 'noirwerk'); ?>

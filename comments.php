@@ -34,11 +34,7 @@ if (post_password_required()) {
                             <footer class="comment-meta">
                                 <div class="comment-author vcard">
                                     <?php echo get_avatar($comment, 48); ?>
-<<<<<<< HEAD
                                     <?php printf(__('%s', 'noirwerk'), get_comment_author_link()); ?>
-=======
-                                    <?php printf(__('%s'), get_comment_author_link()); ?>
->>>>>>> 2b7244c884dc4bb8a55445380d5fba8d39eb66f4
                                 </div>
                                 <div class="comment-metadata">
                                     <time datetime="<?php comment_time('c'); ?>">

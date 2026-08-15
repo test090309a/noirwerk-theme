@@ -6,11 +6,8 @@
         <canvas id="rain" aria-hidden="true"></canvas>
         <?php if (has_post_thumbnail()) : ?>
             <video class="hero__video is-live" autoplay muted loop playsinline aria-hidden="true" tabindex="-1">
-<<<<<<< HEAD
                 <source src="<?php echo esc_url(get_template_directory_uri()); ?>/assets/videos/hero.mp4" type="video/mp4">
-=======
                 <source src="<?php echo get_template_directory_uri(); ?>/assets/videos/hero.mp4" type="video/mp4">
->>>>>>> 2b7244c884dc4bb8a55445380d5fba8d39eb66f4
             </video>
         <?php endif; ?>
         <div class="hero__shade"></div>

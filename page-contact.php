@@ -28,7 +28,7 @@ get_header(); ?>
                     </div>
                     <div>
                         <small><?php _e('Studio', 'noirwerk'); ?></small>
-                        <p>Turmstraße 49, 10551 Wien</p>
+                        <p>Lerchenfelderstrasse, 10551 Wien</p>
                     </div>
                     <div>
                         <small><?php _e('Karriere', 'noirwerk'); ?></small>

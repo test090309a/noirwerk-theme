@@ -1,34 +1,38 @@
-<?php
-/**
- * Stats Section Template Part
- */
+<?php 
+// Wir nutzen die Theme Mod API für Werte ohne Plugin
+
+$stat_01 = get_theme_mod( 'my_stat_01', '870' ); // Fallback: 870%
+$stat_label_01 = get_theme_mod( 'my_stat_lbl_01', 'Projekte abgeschlossen' );
+
+$stat_02 = get_theme_mod( 'my_stat_02', '15' );
+$stat_label_02 = get_theme_mod( 'my_stat_lbl_02', 'Jahre Erfahrung' );
+
+$stat_03 = get_theme_mod( 'my_stat_03', '24/7' ); // Fallback: 24/7
+$stat_label_03 = get_theme_mod( 'my_stat_lbl_03', 'Support Verfügbarkeit' );
 ?>
 
-<section class="stats" id="zahlen" aria-label="<?php _e('Kennzahlen', 'noirwerk'); ?>">
-    <div class="container">
-        <p class="eyebrow" data-reveal><b>05</b>&nbsp;— <?php _e('Zahlen', 'noirwerk'); ?></p>
-        <div class="stats__grid">
-            <?php
-            $stats = array(
-                array('value' => '87', 'suffix' => '+', 'label' => __('Projekte geliefert', 'noirwerk')),
-                array('value' => '14', 'suffix' => '', 'label' => __('Internationale Awards', 'noirwerk')),
-                array('value' => '12', 'suffix' => '', 'label' => __('Märkte & Zeitzonen', 'noirwerk')),
-                array('value' => '99.9', 'suffix' => '%', 'label' => __('Uptime unserer Systeme', 'noirwerk'))
-            );
-            
-            foreach ($stats as $stat) : ?>
-                <div class="stat" data-reveal>
-                    <div class="stat__val">
-                        <span data-count="<?php echo esc_attr($stat['value']); ?>" <?php echo (strpos($stat['value'], '.') !== false) ? 'data-decimals="1"' : ''; ?>>
-                            <?php echo esc_html($stat['value']); ?>
-                        </span>
-                        <?php if ($stat['suffix']) : ?>
-                            <i><?php echo esc_html($stat['suffix']); ?></i>
-                        <?php endif; ?>
-                    </div>
-                    <small><?php echo esc_html($stat['label']); ?></small>
-                </div>
-            <?php endforeach; ?>
+<section class="stats-section">
+    <div class="container stats-container">
+
+        <!-- Statistik Item 1 -->
+        <div class="col col-4 stat-item" data-count="<?php echo esc_attr($stat_01); ?>">
+            <?php if ( ! empty( $stat_label_01 ) ): ?>
+                <h3><?php echo wp_kses_post( $stat_label_01 ); ?></h3>
+                
+                <!-- Hier wird die Zahl angezeigt -->
+                <span class="number"><?php echo absint( $stat_02 ); ?>%</span> 
+            <?php endif; ?>
         </div>
+
+        <!-- Statistik Item 2 (Beispiel für eine andere Struktur) -->
+        <div class="col col-4 stat-item" data-count="<?php echo esc_attr($stat_03); ?>">
+             <?php if ( ! empty( $stat_label_02 ) ): ?>
+                <h3><?php echo wp_kses_post( $stat_label_02 ); ?></h3>
+                
+                 <!-- Hier wird die Zahl angezeigt -->
+                <span class="number"><?php echo absint( $stat_03 ); ?>+</span> 
+            <?php endif; ?>
+        </div>
+
     </div>
 </section>

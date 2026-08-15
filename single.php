@@ -30,10 +30,7 @@
                 <!-- Beitragsinhalt -->
                 <div class="single-post__content">
                     <?php the_content(); ?>
-<<<<<<< HEAD
                     <?php wp_link_pages(array('before' => '<div class="page-links">' . __('Seiten:', 'noirwerk'), 'after' => '</div>')); ?>
-=======
->>>>>>> 2b7244c884dc4bb8a55445380d5fba8d39eb66f4
                 </div>
                 
                 <!-- Beitragsfooter -->

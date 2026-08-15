@@ -35,7 +35,7 @@ function noirwerk_customizer($wp_customize) {
     ));
     
     $wp_customize->add_setting('noirwerk_footer_text', array(
-        'default' => 'Systeme aus Licht und Logik. Gebaut in Berlin, getestet gegen die Nacht.',
+        'default' => 'Systeme aus Licht und Logik. Gebaut in Wien, getestet gegen die Nacht.',
         'sanitize_callback' => 'wp_kses_post',
     ));
     

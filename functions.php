@@ -40,7 +40,6 @@ function noirwerk_assets() {
     wp_enqueue_style('noirwerk-main', get_stylesheet_directory_uri() . '/assets/css/main.css', array(), '1.0');
     wp_enqueue_style('google-fonts', 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap', array(), null);
     
-    // Lokale Scripts (GSAP, Lenis, SplitType)
     wp_enqueue_script('noirwerk-gsap', get_template_directory_uri() . '/assets/js/gsap.min.js', array(), '3.12.5', true);
     wp_enqueue_script('noirwerk-scrolltrigger', get_template_directory_uri() . '/assets/js/ScrollTrigger.min.js', array('noirwerk-gsap'), '3.12.5', true);
     wp_enqueue_script('noirwerk-lenis', get_template_directory_uri() . '/assets/js/lenis.min.js', array(), '1.1.14', true);
@@ -113,7 +112,7 @@ function noirwerk_lazy_load() {
 add_action('wp_footer', 'noirwerk_lazy_load');
 
 // ============================================================
-// KONTAKTE DATENBANK
+// KONTAKTE DATENBANK (mit Telefon-Feld)
 // ============================================================
 
 function noirwerk_create_contacts_table() {
@@ -127,6 +126,7 @@ function noirwerk_create_contacts_table() {
         name varchar(255) NOT NULL,
         email varchar(255) NOT NULL,
         subject varchar(255) DEFAULT '',
+        phone varchar(50) DEFAULT '',
         message text NOT NULL,
         status varchar(20) DEFAULT 'unread',
         created_at datetime DEFAULT CURRENT_TIMESTAMP,
@@ -138,7 +138,7 @@ function noirwerk_create_contacts_table() {
 }
 register_activation_hook(__FILE__, 'noirwerk_create_contacts_table');
 
-function noirwerk_save_contact($name, $email, $subject, $message) {
+function noirwerk_save_contact($name, $email, $subject, $message, $phone = '') {
     global $wpdb;
     $table_name = $wpdb->prefix . 'noirwerk_contacts';
     
@@ -148,11 +148,12 @@ function noirwerk_save_contact($name, $email, $subject, $message) {
             'name' => $name,
             'email' => $email,
             'subject' => $subject,
+            'phone' => $phone,
             'message' => $message,
             'status' => 'unread',
             'created_at' => current_time('mysql')
         ),
-        array('%s', '%s', '%s', '%s', '%s', '%s')
+        array('%s', '%s', '%s', '%s', '%s', '%s', '%s')
     );
 }
 
@@ -342,28 +343,6 @@ function noirwerk_contacts_page() {
 }
 
 // ============================================================
-// E-MAILS IN DATEI SPEICHERN (AUSKOMMENTIERT FÜR WORDPRESS.ORG)
-// ============================================================
-
-// add_filter('wp_mail', function($args) {
-//     $log_dir = '/var/www/html/wp-content/uploads/';
-//     if (!file_exists($log_dir)) {
-//         mkdir($log_dir, 0755, true);
-//     }
-//     
-//     $log_file = $log_dir . 'mail.log';
-//     $log = date('Y-m-d H:i:s') . "\n";
-//     $log .= "TO: " . print_r($args['to'], true) . "\n";
-//     $log .= "SUBJECT: " . $args['subject'] . "\n";
-//     $log .= "MESSAGE:\n" . $args['message'] . "\n";
-//     $log .= "HEADERS: " . print_r($args['headers'], true) . "\n";
-//     $log .= str_repeat('=', 60) . "\n\n";
-//     
-//     file_put_contents($log_file, $log, FILE_APPEND);
-//     return $args;
-// }, 10, 1);
-
-// ============================================================
 // WEITERE THEME-SUPPORTS
 // ============================================================
 
@@ -413,39 +392,6 @@ function noirwerk_admin_notice() {
 add_action('admin_notices', 'noirwerk_admin_notice');
 
 // ============================================================
-// CSV-EXPORT (AUSKOMMENTIERT FÜR WORDPRESS.ORG)
-// ============================================================
-
-// function noirwerk_export_contacts() {
-//     if (isset($_GET['export_contacts']) && current_user_can('manage_options')) {
-//         global $wpdb;
-//         $table_name = $wpdb->prefix . 'noirwerk_contacts';
-//         $contacts = $wpdb->get_results("SELECT * FROM $table_name ORDER BY created_at DESC");
-//         
-//         header('Content-Type: text/csv; charset=utf-8');
-//         header('Content-Disposition: attachment; filename=kontaktanfragen.csv');
-//         
-//         $output = fopen('php://output', 'w');
-//         fputcsv($output, array('ID', 'Name', 'E-Mail', 'Betreff', 'Status', 'Datum', 'Nachricht'));
-//         
-//         foreach ($contacts as $contact) {
-//             fputcsv($output, array(
-//                 $contact->id,
-//                 $contact->name,
-//                 $contact->email,
-//                 $contact->subject,
-//                 $contact->status,
-//                 $contact->created_at,
-//                 $contact->message
-//             ));
-//         }
-//         fclose($output);
-//         exit;
-//     }
-// }
-// add_action('admin_init', 'noirwerk_export_contacts');
-
-// ============================================================
 // COMMENT REPLY SCRIPT
 // ============================================================
 
@@ -455,3 +401,277 @@ function noirwerk_enqueue_comments_reply() {
     }
 }
 add_action('wp_enqueue_scripts', 'noirwerk_enqueue_comments_reply');
+
+// ============================================================
+// CUSTOMIZER – STATISTIKEN
+// ============================================================
+
+function noirwerk_stats_customizer($wp_customize) {
+    
+    $wp_customize->add_section('noirwerk_stats_section', array(
+        'title'    => __('Statistiken', 'noirwerk'),
+        'priority' => 30,
+    ));
+
+    // Statistik 1: Zahl
+    $wp_customize->add_setting('noirwerk_stat_01', array(
+        'default'           => '870',
+        'sanitize_callback' => 'absint'
+    ));
+    $wp_customize->add_control('noirwerk_stat_01', array(
+        'label'   => __('Statistik 1 (Zahl)', 'noirwerk'),
+        'section' => 'noirwerk_stats_section',
+        'type'    => 'number',
+    ));
+
+    // Statistik 1: Label
+    $wp_customize->add_setting('noirwerk_stat_lbl_01', array(
+        'default'           => 'Projekte abgeschlossen',
+        'sanitize_callback' => 'wp_kses_post'
+    ));
+    $wp_customize->add_control('noirwerk_stat_lbl_01', array(
+        'label'   => __('Statistik 1 (Label)', 'noirwerk'),
+        'section' => 'noirwerk_stats_section',
+        'type'    => 'text',
+    ));
+
+    // Statistik 2: Zahl
+    $wp_customize->add_setting('noirwerk_stat_02', array(
+        'default'           => '15',
+        'sanitize_callback' => 'absint'
+    ));
+    $wp_customize->add_control('noirwerk_stat_02', array(
+        'label'   => __('Statistik 2 (Zahl)', 'noirwerk'),
+        'section' => 'noirwerk_stats_section',
+        'type'    => 'number',
+    ));
+
+    // Statistik 2: Label
+    $wp_customize->add_setting('noirwerk_stat_lbl_02', array(
+        'default'           => 'Jahre Erfahrung',
+        'sanitize_callback' => 'wp_kses_post'
+    ));
+    $wp_customize->add_control('noirwerk_stat_lbl_02', array(
+        'label'   => __('Statistik 2 (Label)', 'noirwerk'),
+        'section' => 'noirwerk_stats_section',
+        'type'    => 'text',
+    ));
+
+    // Statistik 3: Zahl
+    $wp_customize->add_setting('noirwerk_stat_03', array(
+        'default'           => '27',
+        'sanitize_callback' => 'absint'
+    ));
+    $wp_customize->add_control('noirwerk_stat_03', array(
+        'label'   => __('Statistik 3 (Zahl)', 'noirwerk'),
+        'section' => 'noirwerk_stats_section',
+        'type'    => 'number',
+    ));
+
+    // Statistik 3: Label
+    $wp_customize->add_setting('noirwerk_stat_lbl_03', array(
+        'default'           => 'Probleme bei Ereignissen',
+        'sanitize_callback' => 'wp_kses_post'
+    ));
+    $wp_customize->add_control('noirwerk_stat_lbl_03', array(
+        'label'   => __('Statistik 3 (Label)', 'noirwerk'),
+        'section' => 'noirwerk_stats_section',
+        'type'    => 'text',
+    ));
+}
+add_action('customize_register', 'noirwerk_stats_customizer');
+
+// ============================================================
+// PROJEKT STARTEN FORMULAR
+// ============================================================
+
+function noirwerk_handle_project_start() {
+    // Nonce prüfen
+    if (!isset($_POST['project_start_nonce']) || !wp_verify_nonce($_POST['project_start_nonce'], 'noirwerk_project_start')) {
+        wp_die('Sicherheitsfehler.');
+    }
+    
+    // Felder sammeln
+    $project_type = sanitize_text_field($_POST['project_type'] ?? '');
+    $budget = sanitize_text_field($_POST['budget'] ?? '');
+    $description = sanitize_textarea_field($_POST['project_description'] ?? '');
+    $name = sanitize_text_field($_POST['name'] ?? '');
+    $email = sanitize_email($_POST['email'] ?? '');
+    $phone = sanitize_text_field($_POST['phone'] ?? '');
+    
+    // Budget validieren
+    $valid_budgets = array('under-10k', '10-30k', '30-50k', 'over-50k');
+    if (!in_array($budget, $valid_budgets)) {
+        $budget = '';
+    }
+    
+    // Validierung
+    if (empty($name) || empty($email) || empty($project_type)) {
+        wp_redirect(add_query_arg('error', 'empty', wp_get_referer()));
+        exit;
+    }
+    
+    if (!is_email($email)) {
+        wp_redirect(add_query_arg('error', 'invalid_email', wp_get_referer()));
+        exit;
+    }
+    
+    // Telefon validieren (optional)
+    if (!empty($phone) && !preg_match('/^[+]?[0-9\s\-]{5,20}$/', $phone)) {
+        wp_redirect(add_query_arg('error', 'invalid_phone', wp_get_referer()));
+        exit;
+    }
+    
+    // In Datenbank speichern
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'noirwerk_contacts';
+    
+    $wpdb->insert(
+        $table_name,
+        array(
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'subject' => 'Projektanfrage: ' . $project_type,
+            'message' => "Projekt-Typ: $project_type\nBudget: $budget\nBeschreibung: $description",
+            'status' => 'unread',
+            'created_at' => current_time('mysql')
+        ),
+        array('%s', '%s', '%s', '%s', '%s', '%s', '%s')
+    );
+    
+    // E-Mail an Admin
+    $to = get_option('admin_email');
+    $headers = array('Content-Type: text/html; charset=UTF-8');
+    $body = "
+    <html>
+    <head><style>
+        body { font-family: 'IBM Plex Mono', monospace; background: #000; color: #fff; padding: 2rem; }
+        .container { max-width: 600px; margin: 0 auto; border: 1px solid #D6001C; padding: 2rem; }
+        h2 { color: #D6001C; }
+        .field { margin: 1rem 0; }
+        .label { color: #666; font-size: 0.7rem; text-transform: uppercase; }
+        .value { color: #fff; font-weight: 300; }
+    </style></head>
+    <body>
+        <div class='container'>
+            <h2>🔴 Neue Projektanfrage</h2>
+            <div class='field'><div class='label'>Name</div><div class='value'>$name</div></div>
+            <div class='field'><div class='label'>E-Mail</div><div class='value'>$email</div></div>
+            <div class='field'><div class='label'>Telefon</div><div class='value'>$phone</div></div>
+            <div class='field'><div class='label'>Projekt-Typ</div><div class='value'>$project_type</div></div>
+            <div class='field'><div class='label'>Budget</div><div class='value'>$budget</div></div>
+            <div class='field'><div class='label'>Beschreibung</div><div class='value'>$description</div></div>
+        </div>
+    </body>
+    </html>
+    ";
+    
+    $mail_sent = wp_mail($to, 'Neue Projektanfrage von ' . $name, $body, $headers);
+    if (!$mail_sent) {
+        error_log('Noirwerk: E-Mail-Versand fehlgeschlagen für ' . $email);
+    }
+    
+    // ✅ Auf Danke-Seite weiterleiten (erstellen! -> Seite "Danke" in WordPress anlegen)
+    wp_redirect(home_url('/danke/'));
+    exit;
+}
+
+add_action('admin_post_noirwerk_project_start', 'noirwerk_handle_project_start');
+add_action('admin_post_nopriv_noirwerk_project_start', 'noirwerk_handle_project_start');
+
+
+// ============================================================
+// HASH-LINKS AUF STARTSEITE WEITERLEITEN
+// ============================================================
+add_action('template_redirect', function() {
+    if (is_404() && strpos($_SERVER['REQUEST_URI'], '#') !== false) {
+        wp_redirect(home_url('/'));
+        exit;
+    }
+});
+
+/// ============================================================
+// PROJEKT STARTEN – AJAX-HANDLER
+// ============================================================
+function noirwerk_handle_project_start_ajax() {
+    // Nonce prüfen
+    if (!isset($_POST['project_start_nonce']) || !wp_verify_nonce($_POST['project_start_nonce'], 'noirwerk_project_start')) {
+        wp_send_json_error(array('message' => 'Sicherheitsfehler.'));
+        return;
+    }
+
+    // Felder sammeln
+    $project_type = sanitize_text_field($_POST['project_type'] ?? '');
+    $budget = sanitize_text_field($_POST['budget'] ?? '');
+    $description = sanitize_textarea_field($_POST['project_description'] ?? '');
+    $name = sanitize_text_field($_POST['name'] ?? '');
+    $email = sanitize_email($_POST['email'] ?? '');
+    $phone = sanitize_text_field($_POST['phone'] ?? '');
+
+    // Validierung
+    if (empty($name) || empty($email) || empty($project_type)) {
+        wp_send_json_error(array('message' => 'Bitte füllen Sie alle Pflichtfelder aus.'));
+        return;
+    }
+    if (!is_email($email)) {
+        wp_send_json_error(array('message' => 'Bitte geben Sie eine gültige E-Mail-Adresse ein.'));
+        return;
+    }
+    if (!empty($phone) && !preg_match('/^[+]?[0-9\s\-]{5,20}$/', $phone)) {
+        wp_send_json_error(array('message' => 'Bitte geben Sie eine gültige Telefonnummer ein.'));
+        return;
+    }
+
+    // In Datenbank speichern
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'noirwerk_contacts';
+
+    $wpdb->insert(
+        $table_name,
+        array(
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'subject' => 'Projektanfrage: ' . $project_type,
+            'message' => "Projekt-Typ: $project_type\nBudget: $budget\nBeschreibung: $description",
+            'status' => 'unread',
+            'created_at' => current_time('mysql')
+        ),
+        array('%s', '%s', '%s', '%s', '%s', '%s', '%s')
+    );
+
+    // E-Mail an Admin
+    $to = get_option('admin_email');
+    $headers = array('Content-Type: text/html; charset=UTF-8');
+    $body = "
+    <html>
+    <head><style>
+        body { font-family: 'IBM Plex Mono', monospace; background: #000; color: #fff; padding: 2rem; }
+        .container { max-width: 600px; margin: 0 auto; border: 1px solid #D6001C; padding: 2rem; }
+        h2 { color: #D6001C; }
+        .field { margin: 1rem 0; }
+        .label { color: #666; font-size: 0.7rem; text-transform: uppercase; }
+        .value { color: #fff; font-weight: 300; }
+    </style></head>
+    <body>
+        <div class='container'>
+            <h2>🔴 Neue Projektanfrage</h2>
+            <div class='field'><div class='label'>Name</div><div class='value'>$name</div></div>
+            <div class='field'><div class='label'>E-Mail</div><div class='value'>$email</div></div>
+            <div class='field'><div class='label'>Telefon</div><div class='value'>$phone</div></div>
+            <div class='field'><div class='label'>Projekt-Typ</div><div class='value'>$project_type</div></div>
+            <div class='field'><div class='label'>Budget</div><div class='value'>$budget</div></div>
+            <div class='field'><div class='label'>Beschreibung</div><div class='value'>$description</div></div>
+        </div>
+    </body>
+    </html>
+    ";
+
+    wp_mail($to, 'Neue Projektanfrage von ' . $name, $body, $headers);
+
+    // ✅ Erfolg zurückmelden
+    wp_send_json_success(array('message' => 'Ihre Anfrage wurde erfolgreich gesendet.'));
+}
+add_action('wp_ajax_noirwerk_project_start_ajax', 'noirwerk_handle_project_start_ajax');
+add_action('wp_ajax_nopriv_noirwerk_project_start_ajax', 'noirwerk_handle_project_start_ajax');

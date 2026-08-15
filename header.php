@@ -9,8 +9,8 @@
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 
-<!-- Skip to content link für Barrierefreiheit -->
-<a class="skip-link" href="#main"><?php _e('Zum Inhalt springen', 'noirwerk'); ?></a>
+<!-- Skip to content link für Barrierefreiheit 
+<a class="skip-link" href="#main"><?php _e('Zum Inhalt springen', 'noirwerk'); ?></a>-->
 
 <!-- Noise Overlay -->
 <div class="noise" aria-hidden="true"></div>
